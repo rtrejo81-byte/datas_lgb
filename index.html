@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>STH 48 - Captura GPS Profesional</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: #f0f2f5; padding: 15px; }
+        
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            margin-bottom: 20px; 
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        
+        .upload-section, .reload-section { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 15px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .upload-info { 
+            background: #e3f2fd; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-bottom: 20px; 
+            border-left: 4px solid #2196F3;
+        }
+        
+        .upload-info h3 { color: #1976D2; margin-bottom: 10px; font-size: 16px; }
+        .upload-info ol, .upload-info p { font-size: 13px; color: #555; line-height: 1.6; }
+        
+        .input-group { margin: 15px 0; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; font-size: 14px; }
+        .input-group input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 10px; 
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus { outline: none; border-color: #667eea; }
+        
+        .btn { 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            margin: 5px 0;
+            font-size: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .btn:active { transform: translateY(0); }
+        
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 100%; }
+        .btn-warning { background: #FF9800; color: white; width: 100%; }
+        .btn-success { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; width: 100%; padding: 15px; font-size: 16px; }
+        .btn-secondary { background: #6c757d; color: white; width: 100%; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-box { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 12px; 
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .stat-number { font-size: 32px; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .stat-label { font-size: 12px; color: #666; margin-top: 5px; }
+        
+        .progress-container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .progress-bar { 
+            background: #e0e0e0; 
+            height: 30px; 
+            border-radius: 15px; 
+            overflow: hidden; 
+            margin-top: 10px;
+        }
+        .progress-fill { 
+            background: linear-gradient(90deg, #4CAF50, #8BC34A); 
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white; 
+            font-weight: bold;
+            transition: width 0.3s ease;
+            font-size: 13px;
+        }
+        
+        .client-card { 
+            background: white; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .client-card:hover { transform: translateX(5px); }
+        
+        .client-name { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 8px; }
+        .client-info { color: #666; font-size: 12px; margin-bottom: 10px; }
+        .client-info span { display: inline-block; background: #f0f0f0; padding: 3px 8px; border-radius: 5px; margin: 2px; }
+        
+        .coords-box { 
+            background: #e8f5e9; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin: 10px 0; 
+            font-family: monospace; 
+            font-size: 12px; 
+            color: #2e7d32;
+            word-break: break-all;
+        }
+        
+        .status-msg { padding: 10px; border-radius: 8px; margin: 10px 0; text-align: center; font-weight: bold; font-size: 13px; }
+        .status-success { background: #d4edda; color: #155724; border-left: 3px solid #28a745; }
+        .status-error { background: #f8d7da; color: #721c24; border-left: 3px solid #dc3545; }
+        .status-warning { background: #fff3cd; color: #856404; border-left: 3px solid #ffc107; }
+        
+        .btn-gps { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            width: 100%; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 8px; 
+            margin-top: 10px; 
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-gps:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+        .btn-gps:disabled { background: #ccc; cursor: not-allowed; opacity: 0.6; }
+        
+        .btn-edit-coords {
+            background: #17a2b8;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 20% auto;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .hidden { display: none !important; }
+        
+        .filter-bar {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-bar input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .stats { gap: 8px; }
+            .stat-number { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📡 STH 48 - Captura GPS Profesional</h1>
+        <p>Sistema avanzado de captura de coordenadas geográficas</p>
+    </div>
+
+    <div id="uploadSection" class="upload-section">
+        <h2>📂 Cargar Lista de Clientes</h2>
+        
+        <div class="upload-info">
+            <h3>📁 Opción 1: Archivo CSV (Recomendado)</h3>
+            <ol>
+                <li>Abre tu archivo Excel "DATA STH 48.xlsx"</li>
+                <li>Ve a Archivo → Guardar como → CSV UTF-8</li>
+                <li>Sube el archivo aquí (máx 10MB)</li>
+            </ol>
+        </div>
+
+        <input type="file" id="fileInput" accept=".csv,.txt" style="display: none;">
+        <button class="btn btn-warning" onclick="document.getElementById('fileInput').click()">
+            📁 Seleccionar archivo CSV
+        </button>
+
+        <div style="text-align: center; margin: 15px 0; color: #999;">ó</div>
+
+        <div class="upload-info">
+            <h3>🔗 Opción 2: Google Sheets</h3>
+            <p style="font-size: 12px;">Publica tu hoja como CSV: Archivo → Compartir → Publicar en web → CSV</p>
+        </div>
+
+        <div class="input-group">
+            <label>URL de Google Sheets (CSV):</label>
+            <input type="text" id="sheetsUrl" placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv">
+        </div>
+
+        <button class="btn btn-primary" onclick="loadFromGoogleSheets()">
+            📥 Cargar desde Google Sheets
+        </button>
+        
+        <div class="input-group" style="margin-top: 15px;">
+            <label>📋 O pega datos CSV directamente:</label>
+            <textarea id="csvTextArea" rows="3" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:12px;" placeholder="ITEM,NOMBRE,ND,VIDEO_HUB,ZONA_HUB,TAP&#10;1,Cliente Ejemplo,ND001,Hub1,Zona1,TAP001"></textarea>
+            <button class="btn btn-info" style="margin-top:10px;" onclick="loadFromTextArea()">Cargar desde texto</button>
+        </div>
+    </div>
+
+    <div id="reloadSection" class="reload-section hidden">
+        <button class="btn btn-secondary" onclick="resetApp()">
+            🔄 Cargar nuevos datos
+        </button>
+        <button class="btn btn-danger" onclick="clearAllData()" style="margin-top:10px;">
+            🗑️ Borrar todos los datos
+        </button>
+    </div>
+
+    <div id="statsSection" class="stats hidden">
+        <div class="stat-box">
+            <div class="stat-number" id="totalClients">0</div>
+            <div class="stat-label">Total Clientes</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="completedClients">0</div>
+            <div class="stat-label">Completados</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="pendingClients">0</div>
+            <div class="stat-label">Pendientes</div>
+        </div>
+    </div>
+
+    <div id="progressSection" class="progress-container hidden">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <span style="font-weight: bold;">📊 Progreso de captura:</span>
+            <span style="font-weight: bold;"><span id="completed">0</span> / <span id="total">0</span></span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+        </div>
+    </div>
+
+    <div class="filter-bar hidden" id="filterBar">
+        <input type="text" id="searchInput" placeholder="🔍 Buscar cliente..." onkeyup="filterClients()">
+        <select id="filterStatus" onchange="filterClients()" style="padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0;">
+            <option value="all">Todos</option>
+            <option value="pending">Pendientes</option>
+            <option value="completed">Completados</option>
+        </select>
+    </div>
+
+    <div id="clientList"></div>
+
+    <div id="exportButtons" class="hidden" style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-success" id="exportBtn" onclick="exportToCSV()" style="flex:1;">
+            📥 Exportar Datos Completos
+        </button>
+        <button class="btn btn-primary" onclick="exportPendingOnly()" style="flex:1;">
+            📤 Exportar Solo Pendientes
+        </button>
+    </div>
+
+    <!-- Modal para editar coordenadas -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px;">✏️ Editar Coordenadas</h3>
+            <div class="input-group">
+                <label>Latitud:</label>
+                <input type="text" id="editLat" placeholder="-33.123456">
+            </div>
+            <div class="input-group">
+                <label>Longitud:</label>
+                <input type="text" id="editLon" placeholder="-70.654321">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveEditedCoords()" style="flex:1;">Guardar</button>
+                <button class="btn btn-secondary" onclick="closeModal()" style="flex:1;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script>
+        let clients = [];
+        let filteredClients = [];
+        let currentEditClientId = null;
+
+        // Función mejorada para parsear CSV usando PapaParse
+        function parseCSVWithPapa(text) {
+            try {
+                const result = Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    transformHeader: header => header.trim().toUpperCase()
+                });
+                
+                if (result.errors.length > 0) {
+                    console.warn('Errores de parseo:', result.errors);
+                }
+                
+                const data = result.data;
+                clients = [];
+                
+                // Mapear columnas necesarias
+                const requiredCols = ['ITEM', 'NOMBRE_CLIENTE', 'ND', 'VIDEO_HUB', 'ZONA_HUB', 'TAP'];
+                
+                for (let row of data) {
+                    const item = row['ITEM'] || Object.values(row)[0];
+                    if (!item || item === 'ITEM') continue;
+                    
+                    // Buscar columnas por similitud
+                    const findColumn = (possibleNames) => {
+                        for (let name of possibleNames) {
+                            const keys = Object.keys(row);
+                            const found = keys.find(k => k.includes(name.toUpperCase()) || name.toUpperCase().includes(k));
+                            if (found) return row[found];
+                        }
+                        return '';
+                    };
+                    
+                    clients.push({
+                        item: String(item),
+                        name: findColumn(['NOMBRE_CLIENTE', 'CLIENTE', 'NOMBRE']),
+                        nd: findColumn(['ND', 'NUMERO_DOCUMENTO', 'DOCUMENTO']),
+                        videoHub: findColumn(['VIDEO_HUB', 'VIDEOHUB', 'HUB']),
+                        zonaHub: findColumn(['ZONA_HUB', 'ZONA', 'ZONAHUB']),
+                        tap: findColumn(['TAP', 'TAP_CLIENTE']),
+                        existingCoords: row['COORDENADAS'] || row['LAT_LON'] || '',
+                        comment: row['COMENTARIO'] || '',
+                        lat: '',
+                        lon: '',
+                        accuracy: '',
+                        timestamp: '',
+                        status: 'pending'
+                    });
+                }
+                
+                // Cargar datos guardados previamente si existen
+                const saved = localStorage.getItem('sth48_data');
+                if (saved) {
+                    const savedData = JSON.parse(saved);
+                    // Preservar coordenadas capturadas previamente
+                    for (let savedClient of savedData) {
+                        const existingClient = clients.find(c => c.item === savedClient.item);
+                        if (existingClient && savedClient.lat && savedClient.lon) {
+                            existingClient.lat = savedClient.lat;
+                            existingClient.lon = savedClient.lon;
+                            existingClient.accuracy = savedClient.accuracy;
+                            existingClient.timestamp = savedClient.timestamp;
+                            existingClient.status = 'completed';
+                        }
+                    }
+                }
+                
+                if (clients.length === 0) {
+                    alert('⚠️ No se encontraron datos válidos en el archivo');
+                    return false;
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error parseando CSV:', error);
+                alert('❌ Error al leer el archivo: ' + error.message);
+                return false;
+            }
+        }
+
+        // Cargar desde archivo
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 10 * 1024 * 1024) {
+                alert('❌ El archivo es demasiado grande (máx 10MB)');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (parseCSVWithPapa(e.target.result)) {
+                    finalizeDataLoad();
+                }
+            };
+            reader.onerror = function() {
+                alert('❌ Error al leer el archivo');
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
+
+        // Cargar desde Google Sheets con múltiples proxies
+        async function loadFromGoogleSheets() {
+            const urlInput = document.getElementById('sheetsUrl');
+            let sheetsUrl = urlInput.value.trim();
+            
+            if (!sheetsUrl) {
+                alert('❌ Ingresa la URL de Google Sheets');
+                return;
+            }
+            
+            // Asegurar formato CSV
+            if (!sheetsUrl.includes('export?format=csv') && !sheetsUrl.includes('output=csv')) {
+                if (sheetsUrl.includes('/edit')) {
+                    sheetsUrl = sheetsUrl.replace('/edit', '/export?format=csv');
+                } else if (sheetsUrl.includes('/pub')) {
+                    sheetsUrl = sheetsUrl + '&output=csv';
+                }
+            }
+            
+            localStorage.setItem('sth48_sheets_url', sheetsUrl);
+            
+            // Mostrar loading
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Cargando...';
+            btn.disabled = true;
+            
+            // Probar múltiples proxies
+            const proxies = [
+                'https://api.allorigins.win/raw?url=',
+                'https://cors-anywhere.herokuapp.com/',
+                'https://proxy.cors.sh/'
+            ];
+            
+            let success = false;
+            
+            for (let proxy of proxies) {
+                try {
+                    const proxyUrl = proxy + encodeURIComponent(sheetsUrl);
+                    const response = await fetch(proxyUrl, {
+                        headers: proxy.includes('cors.sh') ? { 'x-cors-api-key': 'temp' } : {}
+                    });
+                    
+                    if (response.ok) {
+                        const csvText = await response.text();
+                        if (parseCSVWithPapa(csvText)) {
+                            success = true;
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Proxy ${proxy} falló:`, error);
+                    continue;
+                }
+            }
+            
+            btn.disabled = false;
+            btn.textContent = originalText;
+            
+            if (success) {
+                finalizeDataLoad();
+            } else {
+                alert('❌ No se pudo cargar desde Google Sheets.\nVerifica que la hoja esté publicada y usa la opción de archivo CSV local.');
+            }
+        }
+
+        // Cargar desde textarea
+        function loadFromTextArea() {
+            const text = document.getElementById('csvTextArea').value;
+            if (!text.trim()) {
+                alert('⚠️ Ingresa datos CSV en el área de texto');
+                return;
+            }
+            
+            if (parseCSVWithPapa(text)) {
+                finalizeDataLoad();
+            }
+        }
+
+        // Finalizar carga de datos
+        function finalizeDataLoad() {
+            if (clients.length === 0) {
+                alert('❌ No se encontraron clientes para cargar');
+                return;
+            }
+            
+            document.getElementById('uploadSection').classList.add('hidden');
+            document.getElementById('reloadSection').classList.remove('hidden');
+            document.getElementById('statsSection').classList.remove('hidden');
+            document.getElementById('progressSection').classList.remove('hidden');
+            document.getElementById('filterBar').classList.remove('hidden');
+            document.getElementById('exportButtons').classList.remove('hidden');
+            
+            saveData();
+            renderClients();
+            updateStats();
+            alert(`✅ ¡Éxito! Se cargaron ${clients.length} clientes`);
+        }
+
+        // Capturar GPS mejorado
+        function captureGPS(id) {
+            const btn = document.getElementById(`btn-${CSS.escape(String(id))}`);
+            const statusDiv = document.getElementById(`status-${CSS.escape(String(id))}`);
+            
+            if (!navigator.geolocation) {
+                statusDiv.innerHTML = '<div class="status-msg status-error">❌ Tu navegador no soporta GPS</div>';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '📍 Solicitando permiso...';
+
+            // Opciones de alta precisión
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 20000,
+                maximumAge: 0
+            };
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude.toFixed(6);
+                    const lon = position.coords.longitude.toFixed(6);
+                    const accuracy = position.coords.accuracy.toFixed(1);
+                    
+                    const client = clients.find(c => String(c.item) === String(id));
+                    if (client) {
+                        client.lat = lat;
+                        client.lon = lon;
+                        client.accuracy = accuracy;
+                        client.timestamp = new Date().toLocaleString('es-CL');
+                        client.status = "completed";
+                        saveData();
+                    }
+
+                    let accuracyMsg = '';
+                    if (accuracy < 20) accuracyMsg = '🟢 Excelente precisión';
+                    else if (accuracy < 50) accuracyMsg = '🟡 Precisión aceptable';
+                    else accuracyMsg = '🟠 Precisión baja';
+                    
+                    statusDiv.innerHTML = `
+                        <div class="status-msg status-success">
+                            ✅ ¡GPS capturado exitosamente!<br>
+                            <div class="coords-box">
+                                📍 ${lat}, ${lon}<br>
+                                🎯 Precisión: ${accuracy} metros (${accuracyMsg})
+                            </div>
+                        </div>
+                    `;
+                    btn.remove();
+                    renderClients();
+                    updateStats();
+                },
+                (error) => {
+                    let msg = '';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED: 
+                            msg = "Permiso denegado. Habilita la ubicación en la configuración de tu navegador."; 
+                            break;
+                        case error.POSITION_UNAVAILABLE: 
+                            msg = "GPS no disponible. Verifica que tu dispositivo tenga GPS activado."; 
+                            break;
+                        case error.TIMEOUT: 
+                            msg = "Tiempo agotado. Intenta nuevamente en un lugar más abierto."; 
+                            break;
+                        default: 
+                            msg = error.message;
+                    }
+                    statusDiv.innerHTML = `<div class="status-msg status-error">❌ Error: ${msg}</div>`;
+                    btn.disabled = false;
+                    btn.textContent = '📍 Reintentar Capturar GPS';
+                },
+                options
+            );
+        }
+
+        // Editar coordenadas manualmente
+        function editCoords(id) {
+            currentEditClientId = id;
+            const client = clients.find(c => String(c.item) === String(id));
+            if (client) {
+                document.getElementById('editLat').value = client.lat || '';
+                document.getElementById('editLon').value = client.lon || '';
+                document.getElementById('editModal').style.display = 'block';
+            }
+        }
+
+        function saveEditedCoords() {
+            const lat = document.getElementById('editLat').value.trim();
+            const lon = document.getElementById('editLon').value.trim();
+            
+            if (!lat || !lon) {
+                alert('⚠️ Ingresa ambas coordenadas');
+                return;
+            }
+            
+            const client = clients.find(c => String(c.item) === String(currentEditClientId));
+            if (client) {
+                client.lat = lat;
+                client.lon = lon;
+                client.accuracy = 'Manual';
+                client.timestamp = new Date().toLocaleString('es-CL');
+                client.status = 'completed';
+                saveData();
+                renderClients();
+                updateStats();
+                alert('✅ Coordenadas guardadas manualmente');
+            }
+            
+            closeModal();
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+            currentEditClientId = null;
+        }
+
+        // Filtrar clientes
+        function filterClients() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('filterStatus').value;
+            
+            filteredClients = clients.filter(client => {
+                const matchesSearch = client.name.toLowerCase().includes(searchTerm) || 
+                                     client.item.toLowerCase().includes(searchTerm) ||
+                                     client.nd.toLowerCase().includes(searchTerm);
+                const matchesStatus = status === 'all' || 
+                                     (status === 'completed' && (client.lat || client.existingCoords)) ||
+                                     (status === 'pending' && !client.lat && !client.existingCoords);
+                return matchesSearch && matchesStatus;
+            });
+            
+            renderFilteredClients();
+        }
+
+        // Renderizar clientes filtrados
+        function renderFilteredClients() {
+            const container = document.getElementById('clientList');
+            container.innerHTML = '';
+            
+            const clientsToRender = filteredClients.length > 0 ? filteredClients : clients;
+            
+            clientsToRender.forEach(client => {
+                const isCompleted = client.lat || client.existingCoords;
+                const div = document.createElement('div');
+                div.className = 'client-card';
+                
+                let coordsDisplay = '';
+                if (client.existingCoords && !client.lat) {
+                    coordsDisplay = `<div class="coords-box">📌 Coordenada existente: ${client.existingCoords}</div>`;
+                } else if (client.lat) {
+                    coordsDisplay = `
+                        <div class="coords-box">
+                            📍 GPS: ${client.lat}, ${client.lon}<br>
+                            🕒 ${client.timestamp || 'Fecha no disponible'}
+                        </div>
+                    `;
+                }
+                
+                div.innerHTML = `
+                    <div class="client-name">📌 ${client.item}. ${client.name}</div>
+                    <div class="client-info">
+                        <span>📄 ND: ${client.nd}</span>
+                        <span>🔑 TAP: ${client.tap}</span>
+                        <span>📍 Zona: ${client.zonaHub}</span>
+                        <span>🏢 Hub: ${client.videoHub}</span>
+                    </div>
+                    ${coordsDisplay}
+                    <div id="status-${client.item.replace(/[^a-zA-Z0-9]/g, '_')}"></div>
+                    ${!isCompleted ? `
+                        <button class="btn-gps" id="btn-${client.item.replace(/[^a-zA-Z0-9]/g, '_')}" onclick="captureGPS('${client.item.replace(/'/g, "\\'")}')">
+                            📍 Capturar GPS
+                        </button>
+                    ` : `
+                        <div class="status-msg status-success">✅ Coordenada registrada</div>
+                        <button class="btn-edit-coords" onclick="editCoords('${client.item.replace(/'/g, "\\'")}')">
+                            ✏️ Editar coordenada
+                        </button>
+                    `}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Renderizar todos los clientes
+        function renderClients() {
+            filteredClients = [...clients];
+            renderFilteredClients();
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            const completed = clients.filter(c => c.lat || c.existingCoords).length;
+            const percent = clients.length > 0 ? (completed / clients.length * 100) : 0;
+            
+            document.getElementById('totalClients').textContent = clients.length;
+            document.getElementById('completedClients').textContent = completed;
+            document.getElementById('pendingClients').textContent = clients.length - completed;
+            document.getElementById('completed').textContent = completed;
+            document.getElementById('total').textContent = clients.length;
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressFill').textContent = Math.round(percent) + '%';
+        }
+
+        // Guardar datos
+        function saveData() {
+            localStorage.setItem('sth48_data', JSON.stringify(clients));
+        }
+
+        // Exportar a CSV
+        function exportToCSV() {
+            let csv = 'ITEM,NOMBRE_CLIENTE,ND,VIDEO_HUB,ZONA_HUB,TAP,LATITUD,LONGITUD,PRECISION,FECHA_CAPTURA,ESTADO,COMENTARIO\n';
+            clients.forEach(c => {
+                const row = [
+                    c.item,
+                    `"${c.name}"`,
+                    c.nd,
+                    c.videoHub,
+                    c.zonaHub,
+                    c.tap,
+                    c.lat || '',
+                    c.lon || '',
+                    c.accuracy || '',
+                    c.timestamp || '',
+                    c.status,
+                    `"${c.comment || ''}"`
+                ];
+                csv += row.join(',') + '\n';
+            });
+
+            downloadCSV(csv, `STH48_GPS_COMPLETO_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        // Exportar solo pendientes
+        function exportPendingOnly() {
+            const pending = clients.filter(c => !c.lat && !c.existingCoords);
+            let csv = 'ITEM,NOMBRE_CLIENTE,ND,VIDEO_HUB,ZONA_HUB,TAP,ESTADO\n';
+            pending.forEach(c => {
+                csv += `${c.item},"${c.name}",${c.nd},${c.videoHub},${c.zonaHub},${c.tap},PENDIENTE\n`;
+            });
+            
+            downloadCSV(csv, `STH48_PENDIENTES_${new Date().toISOString().split('T')[0]}.csv`);
+            alert(`📋 Se exportaron ${pending.length} clientes pendientes`);
+        }
+
+        function downloadCSV(csv, filename) {
+            const bom = "\uFEFF";
+            const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Resetear aplicación
+        function resetApp() {
+            if (confirm('¿Deseas cargar nuevos datos? Los datos actuales se perderán si no los exportaste antes.')) {
+                localStorage.removeItem('sth48_data');
+                clients = [];
+                document.getElementById('uploadSection').classList.remove('hidden');
+                document.getElementById('reloadSection').classList.add('hidden');
+                document.getElementById('statsSection').classList.add('hidden');
+                document.getElementById('progressSection').classList.add('hidden');
+                document.getElementById('filterBar').classList.add('hidden');
+                document.getElementById('exportButtons').classList.add('hidden');
+                document.getElementById('clientList').innerHTML = '';
+                document.getElementById('sheetsUrl').value = '';
+                document.getElementById('csvTextArea').value = '';
+                document.getElementById('fileInput').value = '';
+            }
+        }
+
+        // Borrar todos los datos
+        function clearAllData() {
+            if (confirm('⚠️ ¿ESTÁS SEGURO? Esto borrará TODOS los datos capturados. Esta acción no se puede deshacer.')) {
+                localStorage.removeItem('sth48_data');
+                clients.forEach(client => {
+                    client.lat = '';
+                    client.lon = '';
+                    client.accuracy = '';
+                    client.timestamp = '';
+                    client.status = 'pending';
+                });
+                saveData();
+                renderClients();
+                updateStats();
+                alert('🗑️ Todos los datos han sido eliminados');
+            }
+        }
+
+        // Cargar datos guardados al iniciar
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('sth48_sheets_url');
+            if (savedUrl) {
+                document.getElementById('sheetsUrl').value = savedUrl;
+            }
+            
+            const saved = localStorage.getItem('sth48_data');
+            if (saved) {
+                clients = JSON.parse(saved);
+                if (clients.length > 0) {
+                    document.getElementById('uploadSection').classList.add('hidden');
+                    document.getElementById('reloadSection').classList.remove('hidden');
+                    document.getElementById('statsSection').classList.remove('hidden');
+                    document.getElementById('progressSection').classList.remove('hidden');
+                    document.getElementById('filterBar').classList.remove('hidden');
+                    document.getElementById('exportButtons').classList.remove('hidden');
+                    renderClients();
+                    updateStats();
+                }
+            }
+            
+            // Cerrar modal al hacer clic fuera
+            window.onclick = function(event) {
+                const modal = document.getElementById('editModal');
+                if (event.target === modal) {
+                    closeModal();
+                }
+            };
+        };
+    </script>
+</body>
+</html>
